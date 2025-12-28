@@ -15,13 +15,19 @@ def get_pages(title):
         "Accept-Charset": "utf-8"
     }
     req = urllib.request.Request(url, headers=headers)
-    with urllib.request.urlopen(req) as resp:
-        body = resp.read().decode("utf-8")
+
+    try:
+        with urllib.request.urlopen(req) as resp:
+            body = resp.read().decode("utf-8")
+    except Exception as e:
+        print(f"[skip] {title}: {e}")
+        return []
 
     links = []
     for m in re.findall(r'href="/wiki/([^:#"]+)"', body):
         name = urllib.parse.unquote(m)
         links.append(name)
+
     return links
 
 def bfs(start, goal):
@@ -61,6 +67,7 @@ def bfs_with_dist(start, max_depth=3):
             if nxt not in checked:
                 checked[nxt] = dist + 1
                 que.put((nxt, dist+1))
+        print(f"visiting: {page}, depth={dist}")
 
 def reconstruct_path(checked, start, goal):
     path = []
@@ -91,7 +98,7 @@ def main():
         sys.exit(1)
 
     start = sys.argv[1]
-    bfs_with_distance(start, max_depth=3)
+    bfs_with_dist(start, max_depth=3)
 
 if __name__ == "__main__":
     main()
