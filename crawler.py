@@ -71,19 +71,27 @@ def reconstruct_path(checked, start, goal):
     path.reverse()
     return path
 
+# def main():
+#     if len(sys.argv) != 3:
+#         print(f"[USAGE] python {sys.argv[0]} START GOAL")
+#         sys.exit(1)
+
+#     start, goal = sys.argv[1], sys.argv[2]
+#     checked = bfs(start, goal)
+    
+#     if goal in checked:
+#         path = reconstruct_path(checked, start, goal)
+#         print(" -> ".join(path))
+#     else:
+#         print("No path found.")
+
 def main():
-    if len(sys.argv) != 3:
-        print(f"[USAGE] python {sys.argv[0]} START GOAL")
+    if len(sys.argv) != 2:
+        print(f"[USAGE] python {sys.argv[0]} START")
         sys.exit(1)
 
-    start, goal = sys.argv[1], sys.argv[2]
-    checked = bfs(start, goal)
-    
-    if goal in checked:
-        path = reconstruct_path(checked, start, goal)
-        print(" -> ".join(path))
-    else:
-        print("No path found.")
+    start = sys.argv[1]
+    bfs_with_distance(start, max_depth=3)
 
 if __name__ == "__main__":
     main()
