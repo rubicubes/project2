@@ -1,70 +1,72 @@
+import urllib.request
+import urllib.parse
 import sys
-from queue import SimpleQueue
 import re
+import time
+from queue import SimpleQueue
 
+BASE_URL = "https://ja.wikipedia.org/wiki/"
 
+def get_pages(title):
+    url = BASE_URL + urllib.parse.quote(title)
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Accept-Language": "ja",
+        "Accept-Charset": "utf-8"
+    }
+    req = urllib.request.Request(url, headers=headers)
+    with urllib.request.urlopen(req) as resp:
+        body = resp.read().decode("utf-8")
+
+    links = []
+    for m in re.findall(r'href="/wiki/([^:#"]+)"', body):
+        name = urllib.parse.unquote(m)
+        links.append(name)
+    return links
+
+def bfs(start, goal):
+    que = SimpleQueue()
+    que.put((start, None))
+    checked = {start: None}
+
+    while not que.empty():
+        page, prev = que.get()
+
+        if page == goal:
+            break
+
+        time.sleep(0.1)
+
+        for nxt in get_pages(page):
+            if nxt not in checked:
+                checked[nxt] = page
+                que.put((nxt, page))
+                if nxt == goal:
+                    return checked
+    return checked
+
+def reconstruct_path(checked, start, goal):
+    path = []
+    cur = goal
+    while cur is not None:
+        path.append(cur)
+        cur = checked[cur]
+    path.reverse()
+    return path
 
 def main():
-    argc = len(sys.argv)
-    # 追加
-    if argc != 3:
+    if len(sys.argv) != 3:
         print(f"[USAGE] python {sys.argv[0]} START GOAL")
-        sys.exit(0)
+        sys.exit(1)
 
-    start = sys.argv[1]
-    goal = sys.argv[2]
-  
+    start, goal = sys.argv[1], sys.argv[2]
+    checked = bfs(start, goal)
+    
+    if goal in checked:
+        path = reconstruct_path(checked, start, goal)
+        print(" -> ".join(path))
+    else:
+        print("No path found.")
+
 if __name__ == "__main__":
     main()
-
-
-base_url = "https://ja.wikipedia.org/wiki/"
-title = start
-url = base_url + urllib.parse.quote(title)
-headers = {
-    "User-Agent": "Mozilla/5.0",
-    "Accept-Language": "ja",
-    "Accept-Charset": "utf-8",
-}
-
-req = urllib.request.Request(url, headers=headers, method="GET")
-with urllib.request.urlopen(req) as resp:
-    body = resp.read().decode("utf-8")
-  
-# キューは現在の記事とリンク元の記事を管理
-que = SimpleQueue()
-que.put((start, None))
-checked = {}  # チェック済みなら、記事名をキー、リンク元の記事を値とする要素を持つ
-
-# キューが空になるまで処理を継続
-while not que.empty():
-    # スロットリング
-    time.sleep(0.1)
-
-    # ノードの取り出し
-    node = que.get()
-    page, prev = node
-
-    # 既にチェック済みの記事かどうかを調べる
-    # !!! 実装する !!!
-    if page in checked:
-        continue
-    # 未チェックの記事なら、リンクされた記事を取得
-    next_pages = get_pages(page)
-
-    # 新しい記事の中にゴールが見つかったら終了
-    # !!! 実装する !!!
-    if goal in next_pages:
-        pass
-    # 取得した記事名をキューに追加
-    # !!! もう少し早くできる !!!
-    for next_page in next_pages:
-        que.put((next_page, page))
-# 経路の取り出し
-path = [goal]
-# !!! 実装する !!!
-
-# 結果の表示
-print("")
-print("Answer:")
-print(" -> ".join(path))
