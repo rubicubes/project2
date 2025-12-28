@@ -45,6 +45,23 @@ def bfs(start, goal):
                     return checked
     return checked
 
+def bfs_with_dist(start, max_depth=3):
+    que = SimpleQueue()
+    que.put((start, 0))
+    checked = {start: 0}
+
+    while not que.empty():
+        page, dist = que.get()
+        if dist >= max_depth:
+            print(f"{page} (distance: {dist})")
+            continue
+
+        time.sleep(0.1)
+        for nxt in get_pages(page):
+            if nxt not in checked:
+                checked[nxt] = dist + 1
+                que.put((nxt, dist+1))
+
 def reconstruct_path(checked, start, goal):
     path = []
     cur = goal
